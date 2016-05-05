@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Posts on Learn Puppet</title>
+    <link>http://learnpuppet.org/post/</link>
+    <description>Recent content in Posts on Learn Puppet</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 17 Mar 2016 00:20:44 +0530</lastBuildDate>
+    <atom:link href="http://learnpuppet.org/post/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Resources and Manifests</title>
+      <link>http://learnpuppet.org/post/resources_and_manifests/</link>
+      <pubDate>Thu, 17 Mar 2016 00:20:44 +0530</pubDate>
+      
+      <guid>http://learnpuppet.org/post/resources_and_manifests/</guid>
+      <description>
+
+&lt;h1 id=&#34;chapter-04-building-blocks-resources-ral-and-manifests:1f7a369cd9849674aa58826e3a44bcbe&#34;&gt;Chapter 04  :  Building Blocks : Resources, RAL and  Manifests&lt;/h1&gt;
+
+&lt;p&gt;In this session we are going to introduce you to the building blocks of puppet. We will discuss about Resources and Providers and the learn how to put resources together to create a manifest.&lt;/p&gt;
+
+&lt;h3 id=&#34;puppet-utility:1f7a369cd9849674aa58826e3a44bcbe&#34;&gt;Puppet Utility&lt;/h3&gt;
+
+&lt;p&gt;Before we start talking about manifests, lets learn about this swiss knife puppet utility that we would be using to do almost everything, right from applying manifests, to find  information about nodes being managed by puppet master, to generate and install modules from puppet forge etc.&lt;/p&gt;
+
+&lt;h4 id=&#34;invoking-puppet:1f7a369cd9849674aa58826e3a44bcbe&#34;&gt;Invoking Puppet&lt;/h4&gt;
+
+&lt;p&gt;Assuming puppet is installed on the systems, you could invoke it from a CLI as follows&lt;/p&gt;
+
+&lt;p&gt;{title=&amp;ldquo;Invoking Puppet &amp;ldquo;, lang=shell, linenos=off}&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;[root@master vagrant]# puppet --version
+4.3.2
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&#34;finding-help-with-puppet:1f7a369cd9849674aa58826e3a44bcbe&#34;&gt;Finding Help with Puppet&lt;/h4&gt;
+
+&lt;p&gt;Puppet commands are structured as&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;puppet &amp;lt;subcommand&amp;gt; &amp;lt;options&amp;gt;&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;For example to learn how to use puppet, we will find help with the following command which lists all the sub commands that puppet supports.&lt;/p&gt;
+
+&lt;p&gt;{title=&amp;ldquo;Finding Help &amp;ldquo;, lang=html, linenos=off}&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;[root@master vagrant]# puppet help
+
+Usage: puppet &amp;lt;subcommand&amp;gt; [options] &amp;lt;action&amp;gt; [options]
+
+Available subcommands:
+
+  agent             The puppet agent daemon
+  apply             Apply Puppet manifests locally
+  ca                Local Puppet Certificate Authority management.
+  catalog           Compile, save, view, and convert catalogs.
+  cert              Manage certificates and requests
+  certificate       Provide access to the CA for certificate management.
+  certificate_request  Manage certificate requests.
+  certificate_revocation_list  Manage the list of revoked certificates.
+  config            Interact with Puppet&#39;s settings.
+  describe          Display help about resource types
+  device            Manage remote network devices
+  doc               Generate Puppet references
+  epp               Interact directly with the EPP template parser/renderer.
+  facts             Retrieve and store facts.
+  file              Retrieve and store files in a filebucket
+  filebucket        Store and retrieve files in a filebucket
+  help              Display Puppet help.
+  inspect           Send an inspection report
+  key               Create, save, and remove certificate keys.
+  lookup            Data in modules lookup function
+  man               Display Puppet manual pages.
+  master            The puppet master daemon
+  module            Creates, installs and searches for modules on the Puppet Forge.
+  node              View and manage node definitions.
+  parser            Interact directly with the parser.
+  plugin            Interact with the Puppet plugin system.
+  report            Create, display, and submit reports.
+  resource          The resource abstraction layer shell
+  resource_type     View classes, defined resource types, and nodes from all manifests.
+  status            View puppet server status.
+
+See &#39;puppet help &amp;lt;subcommand&amp;gt; &amp;lt;action&amp;gt;&#39; for help on a specific subcommand action.
+See &#39;puppet help &amp;lt;subcommand&amp;gt;&#39; for help on a specific subcommand.
+Puppet v4.3.2
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;To find help with a specific sub command invoke help as,&lt;/p&gt;
+
+&lt;p&gt;{title=&amp;ldquo;finding help with sub commands&amp;rdquo;, lang=shell, linenos=off}&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;puppet help apply
+puppet help resource
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;resources-the-building-blocks:1f7a369cd9849674aa58826e3a44bcbe&#34;&gt;Resources - The building blocks&lt;/h3&gt;
+
+&lt;p&gt;Resources are the building blocks of puppet. As discussed in the introductory chapter, as a user of puppet, we start looking at our infrastructure as a collection of entities, and start  writing resources to define the end  state and properties of one  entity at a time.&lt;/p&gt;
+
+&lt;p&gt;For eample, we would like to create a system user by name &lt;strong&gt;sachin&lt;/strong&gt; with following properties&lt;/p&gt;
+
+&lt;p&gt;{title=&amp;ldquo;user &amp;ldquo;, lang=html, linenos=off}&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;user      = sachin
+uid       = 1010
+home      = /home/sachin
+password  = &#39;$1$jzi/Xjfd$Fpj3P16NBzfiiQGlDj9rG0&#39;
+shell     = /bin/bash
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Now, when we talk about writing these resources, you may have following questions,
+* How are these resources written ?
+* How do I write the state of each resource ?
+* How  and where do I find the properties of these resources ?
+* Where do I actually write these resources and organize them?&lt;/p&gt;
+
+&lt;p&gt;Lets start answering these questions one by one.&lt;/p&gt;
+
+&lt;h3 id=&#34;puppet-s-dsl:1f7a369cd9849674aa58826e3a44bcbe&#34;&gt;Puppet&amp;rsquo;s DSL&lt;/h3&gt;
+
+&lt;p&gt;Resource are written in a special language created by the creators of Puppet, with its own simple rules and declarative syntax. Unlike a generic programming language such as C and Python,  its scope specific to writing automation code with puppet, its called as Domain Specific Language or simply DSL.  The DSL used by puppet is very simple. Lets now learn how  a resource can be written using puppet.&lt;/p&gt;
+
+&lt;p&gt;A definition of a resource is very similar to stating properties f a entity along with the state, quiet similar to the description above,&lt;/p&gt;
+
+&lt;p&gt;{title=&amp;ldquo;Resource DSL &amp;ldquo;, lang=html, linenos=off}&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;TYPE { &#39;&amp;lt;TITLE&amp;gt;&#39;:
+  ensure       =&amp;gt; &amp;lt;STATE&amp;gt;,
+  &amp;lt;ATTRIBUTE&amp;gt;  =&amp;gt; &amp;lt;VALUE&amp;gt;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;dl&gt;
+&lt;dt&gt;Where,&lt;br /&gt;&lt;/dt&gt;
+&lt;dd&gt;&lt;p&gt;TYPE      : System entity to manage&lt;/p&gt;&lt;/dd&gt;
+&lt;dd&gt;&lt;p&gt;TITLE     : Instance of that entity&lt;/p&gt;&lt;/dd&gt;
+&lt;dd&gt;&lt;p&gt;STATE     : Desired state of the entity&lt;/p&gt;&lt;/dd&gt;
+&lt;dd&gt;&lt;p&gt;ATTRIBUTE : Property / Characteristic of the entity to be managed&lt;/p&gt;&lt;/dd&gt;
+&lt;dd&gt;&lt;p&gt;VALUE     : Value of the attribute&lt;/p&gt;&lt;/dd&gt;
+&lt;dd&gt;&lt;p&gt;Rules&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Description of the type is enclosed in { }&lt;/li&gt;
+&lt;li&gt;Just like json, each Attribute ends with a comma (,) except for last one&lt;/li&gt;
+&lt;li&gt;Attributed and values are separated by fat arrow ( =&amp;gt; )&amp;gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/dd&gt;
+&lt;/dl&gt;
+
+&lt;p&gt;{title=&amp;ldquo;Puppet Resource Example - User&amp;rdquo;, lang=puppet, linenos=off}&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;user { &#39;sachin&#39;:
+  ensure =&amp;gt; present,
+  home =&amp;gt; &#39;/home/sachin&#39;,
+  shell =&amp;gt; &#39;/bin/bash&#39;,
+  uid =&amp;gt; &#39;1010&#39;,
+  password =&amp;gt; &#39;$1$jzi/Xjfd$Fpj3P16NBzfiiQGlDj9rG0&#39;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;I&amp;gt; ## Providers
+I&amp;gt;
+I&amp;gt; Each resource definition is translated to a actual procedure
+I&amp;gt; which s platform specific e.g. creating users on
+I&amp;gt; windows and linux has differs procedures. Puppet detects the
+I&amp;gt; platform its running on and automatically invokes the
+I&amp;gt; procedure through providers.&lt;/p&gt;
+
+&lt;p&gt;{pagebreak}&lt;/p&gt;
+
+&lt;h4 id=&#34;todo-anatomy-of-a-resource:1f7a369cd9849674aa58826e3a44bcbe&#34;&gt;TODO: Anatomy of a Resource&lt;/h4&gt;
+
+&lt;h4 id=&#34;types-of-resources-inbuilt-vs-custom:1f7a369cd9849674aa58826e3a44bcbe&#34;&gt;Types of Resources - Inbuilt vs Custom&lt;/h4&gt;
+
+&lt;p&gt;Based on whether you are managing code system functionality, or additional entities, puppet resource are classified as,&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Built in/Core&lt;/strong&gt;: These are packaged with puppet by default and  are sufficient to manage most common system entities e.g. users, groups, packages, services, network interfaces, cron jobs etc. At the time of writing there are 47 built in resources available.&lt;/p&gt;
+
+&lt;p&gt;List of Useful Built In resources&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th align=&#34;left&#34;&gt;Essential&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;Additional&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;package&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;interface&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;file&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;host&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;service&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;augeas&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;user&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;ssh_authorized_keys&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;group&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;schedule&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;mount&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;tidy&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;cron&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;For complete list of resource types, refer to
+&lt;a href=&#34;https://docs.puppetlabs.com/puppet/latest/reference/type.html&#34;&gt;https://docs.puppetlabs.com/puppet/latest/reference/type.html&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Custom&lt;/strong&gt;: These are additional resource types to manage entities beyond the default ones and are packaged as part of the additional  modules.&lt;/p&gt;
+
+&lt;p&gt;Following are two examples of puppet resources, one to create a apache virtual host, other to configure a network interface on a cisco network device&lt;/p&gt;
+
+&lt;p&gt;{title=&amp;ldquo;&amp;rdquo;, lang=puppet, linenos=off}&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;apache::vhost { &#39;default&#39;:
+    docroot             =&amp;gt; &#39;/var/www/document_root&#39;,
+    server_name         =&amp;gt; false,
+    priority            =&amp;gt; &#39;&#39;,
+    template            =&amp;gt; &#39;apache/virtualhost/vhost.conf.erb&#39;,
+}
+
+cisco_interface_ospf {&amp;quot;Ethernet1/2 Sample&amp;quot;:
+   ensure =&amp;gt; present,
+   duplex =&amp;gt; &#39;auto&#39;,
+   speed  =&amp;gt; 10000,
+   shutdown =&amp;gt; &#39;default&#39;
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;T&amp;gt; ## Extending Puppet
+T&amp;gt;
+T&amp;gt; Custom resources allow you to extend puppet&amp;rsquo;s
+T&amp;gt; functionality by adding support to manage&lt;br /&gt;
+T&amp;gt; custom devices, applications, cloud platforms
+T&amp;gt; etc using Puppet&amp;rsquo;s simplified DSL. To write
+T&amp;gt; custom resource, knowledge of
+T&amp;gt; ruby is required.&lt;/p&gt;
+
+&lt;h4 id=&#34;working-with-puppet-s-resource-shell:1f7a369cd9849674aa58826e3a44bcbe&#34;&gt;Working with Puppet&amp;rsquo;s Resource shell&lt;/h4&gt;
+
+&lt;p&gt;Puppet comes with a &lt;em&gt;resource&lt;/em&gt; sub command which lets us interact with the system using Puppet&amp;rsquo;s RAL. It does two things,&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;Read: Provides an interface to quesry the state of a system entity, and covert it into a puppet code.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Write/Modify: Using puppet&amp;rsquo;s RAL, make changes to the state of system resources.&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h4 id=&#34;namevars:1f7a369cd9849674aa58826e3a44bcbe&#34;&gt;Namevars&lt;/h4&gt;
+
+&lt;h4 id=&#34;discovering-resources-and-information-about-it:1f7a369cd9849674aa58826e3a44bcbe&#34;&gt;Discovering Resources and Information About it&lt;/h4&gt;
+
+&lt;h4 id=&#34;creating-resources-using-puppet-resource-shell:1f7a369cd9849674aa58826e3a44bcbe&#34;&gt;Creating Resources using Puppet Resource Shell&lt;/h4&gt;
+
+&lt;h4 id=&#34;properties-of-a-resource-idempotence:1f7a369cd9849674aa58826e3a44bcbe&#34;&gt;Properties of a Resource - Idempotence&lt;/h4&gt;
+
+&lt;h4 id=&#34;modifying-resources:1f7a369cd9849674aa58826e3a44bcbe&#34;&gt;Modifying Resources&lt;/h4&gt;
+
+&lt;h4 id=&#34;manifests:1f7a369cd9849674aa58826e3a44bcbe&#34;&gt;Manifests&lt;/h4&gt;
+
+&lt;h4 id=&#34;writing-our-first-resource:1f7a369cd9849674aa58826e3a44bcbe&#34;&gt;Writing our First Resource&lt;/h4&gt;
+
+&lt;h4 id=&#34;lab-checking-âfor-syntax:1f7a369cd9849674aa58826e3a44bcbe&#34;&gt;Lab: Checking Âfor Syntax&lt;/h4&gt;
+
+&lt;h4 id=&#34;lab-applying-first-resource:1f7a369cd9849674aa58826e3a44bcbe&#34;&gt;Lab: Applying first Resource&lt;/h4&gt;
+
+&lt;h4 id=&#34;lab-apply-again-see-idempotence-in-action:1f7a369cd9849674aa58826e3a44bcbe&#34;&gt;Lab: Apply Again. See Idempotence in Action&lt;/h4&gt;
+
+&lt;h4 id=&#34;exercise-adding-a-few-more-resources:1f7a369cd9849674aa58826e3a44bcbe&#34;&gt;Exercise: Adding a few more resources&lt;/h4&gt;
+
+&lt;h4 id=&#34;summary:1f7a369cd9849674aa58826e3a44bcbe&#34;&gt;Summary&lt;/h4&gt;
+
+&lt;h4 id=&#34;quiz:1f7a369cd9849674aa58826e3a44bcbe&#34;&gt;Quiz&lt;/h4&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>
