@@ -1,0 +1,7 @@
+baseurl = "http://www.learnpuppet.org/"
+languageCode = "en-us"
+title = "Learn Puppet"
+
+[params]
+  description = "Learn Puppet Step by Step"
+  author = "Gourav Shah"
